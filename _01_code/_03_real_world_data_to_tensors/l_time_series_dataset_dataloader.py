@@ -7,19 +7,20 @@ from torch.utils.data import Dataset, DataLoader, random_split
 class BikesDataset(Dataset):
   def __init__(self):
     bikes_path = os.path.join(os.path.pardir, os.path.pardir, "_00_data", "e_time-series-bike-sharing-dataset", "hour-fixed.csv")
-
+    # 데이터 파일 경로 지정
     bikes_numpy = np.loadtxt(
       fname=bikes_path, dtype=np.float32, delimiter=",", skiprows=1,
       converters={
         1: lambda x: float(x[8:10])  # 2011-01-07 --> 07 --> 7
-      }
+      } # loadtxt 함수를 이용해 데이터파일을 numpy배열로 로드한다
+      #converters 매개변수를 사용하여 데이터의 두 번째 열을 변환한다. -> 날짜 문자열을 일 정보만 추출하여 부동소수저므로 변환한다.
     )
-    bikes = torch.from_numpy(bikes_numpy)
+    bikes = torch.from_numpy(bikes_numpy) # numpy 배열을 텐서로 생성
 
-    daily_bikes = bikes.view(-1, 24, bikes.shape[1])  # daily_bikes.shape: torch.Size([730, 24, 17])
-    daily_bikes_target = daily_bikes[:, :, -1].unsqueeze(dim=-1)
+    daily_bikes = bikes.view(-1, 24, bikes.shape[1])  # -1,24,17 -> 730,24,17
+    daily_bikes_target = daily_bikes[:, :, -1].unsqueeze(dim=-1) # 타겟 데이터 추출
 
-    daily_bikes_data = daily_bikes[:, :, :-1]
+    daily_bikes_data = daily_bikes[:, :, :-1] #
     eye_matrix = torch.eye(4)
 
     day_data_torch_list = []
